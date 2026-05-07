@@ -1,0 +1,93 @@
+# AvaliaFA — Cursor Rules
+# Lido automaticamente pelo Cursor IDE e GitHub Copilot
+
+## Contexto do projeto
+Você está trabalhando no AvaliaFA — Sistema de Avaliações da Faculdade Anasps.
+Leia o AGENTS.md na raiz do projeto para o contexto completo.
+
+## Stack obrigatória
+- PHP 8.3 + Laravel 11
+- MySQL 8.0 (NUNCA PostgreSQL ou SQLite)
+- Redis 7 (cache, sessões, filas, pub/sub)
+- Blade + TailwindCSS + Alpine.js (NUNCA React/Vue no frontend)
+- Laravel Reverb (WebSockets)
+- Laravel Passport (OAuth2)
+- Laravel Horizon (filas)
+
+## Regras de código
+
+### PHP / Laravel
+- Sempre usar `App\` como namespace raiz
+- Sempre tipar parâmetros e retornos: `public function store(Request $request): JsonResponse`
+- Sempre usar `firstOrFail()` em queries que devem retornar um registro
+- Sempre filtrar por `client_system_id` em toda query de recurso
+- Sempre usar soft deletes: `use SoftDeletes;` + `$table->softDeletes()`
+- Sempre retornar `['success' => bool, 'data' => ...]` nas respostas da API
+- Usar `$request->clientSystem()` para obter o sistema autenticado (injetado pelo middleware)
+- Filas: usar a fila correta por domínio (security, moodle-sync, webhooks, certificates, default)
+
+### Blade / Frontend
+- Usar variáveis CSS do design system: `var(--color-primary-600)`, `var(--surface-card)` etc.
+- Fonte principal: `Plus Jakarta Sans`
+- Fonte código/timer: `JetBrains Mono`
+- Suporte obrigatório a dark mode via `[data-theme="dark"]`
+- Alpine.js para reatividade — sem jQuery, sem React
+
+### Banco de dados
+- Migrations: sempre `$table->softDeletes()` + `$table->timestamps()`
+- Chaves estrangeiras: sempre com `constrained()` e ação definida
+- JSON columns: usar `->json()` para configs, metadata, settings
+- Índices: sempre adicionar para campos usados em WHERE + ORDER BY
+
+### Nomenclatura
+- Classes: PascalCase
+- Métodos e variáveis: camelCase
+- Tabelas e colunas: snake_case
+- Rotas: kebab-case
+- Constantes: SCREAMING_SNAKE_CASE
+- Código: inglês | UI/textos para o usuário: português brasileiro
+
+## O que NÃO fazer
+- NÃO usar PostgreSQL ou SQLite
+- NÃO usar React, Vue ou qualquer SPA no frontend principal
+- NÃO criar aluno direto — sempre vem via JWT do sistema de origem
+- NÃO esquecer de filtrar por client_system_id
+- NÃO hardcodar cores — usar variáveis CSS do design system
+- NÃO criar job sem especificar a fila correta
+- NÃO retornar dados de outro client_system por engano
+- NÃO editar migrations já executadas — criar nova migration de alteração
+
+## Estrutura de pastas esperada
+```
+app/
+  Http/
+    Controllers/
+      Api/V1/     ← controllers da API (retornam JSON)
+      Web/        ← controllers do painel (retornam views)
+    Middleware/   ← AuthApiClient, ApiIpAllowlist
+  Models/         ← todos os models Eloquent
+  Services/       ← lógica de negócio
+    Api/          ← SessionTokenService
+  Jobs/           ← jobs assíncronos
+  Events/         ← eventos Laravel
+  Listeners/      ← listeners dos eventos
+resources/
+  views/
+    exam/         ← telas do aluno
+    dashboard/    ← painel professor/admin
+    components/   ← componentes Blade reutilizáveis
+  js/
+    secure-exam-engine.js
+docs/
+  skills/         ← skills para IAs
+  prompts/        ← prompts de continuidade
+  docs/           ← PRD, BRD
+  manuais/        ← manuais de sessão
+```
+
+## Atalhos úteis no projeto
+- Listar o que falta: veja a seção "O que FALTA" no AGENTS.md
+- Contexto completo: docs/skills/SKILL_avalia-fa.md
+- Design: docs/skills/SKILL_design-system.md
+- Moodle: docs/skills/SKILL_moodle-integration.md
+- Ponto atual: docs/prompts/PROMPT_sessao-02_continuidade.md
